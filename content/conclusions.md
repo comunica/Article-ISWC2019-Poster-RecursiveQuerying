@@ -10,7 +10,7 @@ by recursively invoking the query engine on a subset of the RDF response.
 Moving from ad hoc metadata extraction towards a query-based metadata extraction
 comes with the main advantage that the implementation of the extraction modules
 is significantly less complex, which lowers implementation effort.
-On the other hand, preliminary evaluation shows that query-based metadata extraction introduces a 10~20% overhead
+However, preliminary evaluation shows that query-based metadata extraction introduces a 10~20% overhead
 compared to ad hoc metadata extraction in Comunica.
 The main bottleneck lies within the recursive invocation of Comunica.
 

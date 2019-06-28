@@ -43,7 +43,7 @@ that declares the Hydra templated link to execute a triple pattern query.
 </figcaption>
 </figure>
 
-This data shape is significantly more complex than the previous one for counts.
+This data shape is significantly more complex than the one for counts.
 That is why the Hydra Controls Extractor module consists of a non-trivial implementation.
 This module iterates over the triples, and detects all predicates that start with the `hydra:` prefix.
 For all triples with Hydra predicates, an in-memory triple index is maintained in the order of _predicate_, _subject_, _object_.

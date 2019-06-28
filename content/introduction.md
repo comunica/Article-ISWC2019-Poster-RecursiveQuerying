@@ -7,7 +7,7 @@ Linked Data documents,
 or [Triple Pattern Fragments (TPF)](cite:cites ldf).
 
 TPF is a *self-descriptive* hypermedia interface
-that exposes *metadata* to allow intelligent clients to determine how the interface can be used.
+that exposes *metadata* to allow intelligent clients to detect how the interface can be used.
 TPF metadata contains a triple pattern query form
 that is described with the [Hydra Core vocabulary](cite:cites hydra) in RDF.
 Intelligent hypermedia-based clients such as [Comunica](cite:cites taelman_iswc_resources_comunica_2018)

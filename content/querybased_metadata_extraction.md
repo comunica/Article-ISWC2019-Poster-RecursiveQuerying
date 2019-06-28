@@ -3,9 +3,9 @@
 
 Due to the complexity of ad hoc metadata extraction,
 we introduce a query-based metadata extraction process inside the Comunica query engine.
-We write the queries using [GraphQL-LD](cite:cites taelman_iswc_demo_graphqlld_2018) instead of SPARQL because;
+We write the queries using [GraphQL-LD](cite:cites taelman_iswc_demo_graphqlld_2018) instead of SPARQL because:
 
-1. Queries are *compact* as *IRIs are hidden* behind a JSON-LD context.
+1. Queries are *compact* because *IRIs are hidden* behind a JSON-LD context.
 2. Results corresponds to *query shape*, removing the need for *post-processing*.
 
 [](#query-count) and [](#query-templatedlinks) show the
