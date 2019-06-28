@@ -1,5 +1,3 @@
 @prefix hydra: <http://www.w3.org/ns/hydra/core#>.
-<http://fragments.dbpedia.org/2016-04/en#metadata> {
-  <http://fragments.dbpedia.org/2016-04/en>
-    hydra:totalItems "1040358853"^^xsd:integer.
-}
+<http://fragments.dbpedia.org/2016-04/en>
+  hydra:totalItems "1040358853"^^xsd:integer.

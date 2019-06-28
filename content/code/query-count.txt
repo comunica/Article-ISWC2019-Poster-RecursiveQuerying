@@ -1,5 +1,4 @@
 query($pageUrl: String) {
-  graph
   id(_: $pageUrl)
   totalItems
 }
