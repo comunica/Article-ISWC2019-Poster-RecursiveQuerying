@@ -1,11 +1,7 @@
 query($pageUrl: String) {
-  graph
   subset(_: $pageUrl)
   search {
     template
     mapping @optional {
-      variable
-      property
-    }
-  }
-}
+      variable property
+  }}}
