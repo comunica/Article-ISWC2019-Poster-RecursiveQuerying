@@ -1,0 +1,6 @@
+{ "@context": {
+    "@vocab": "http://www.w3.org/ns/hydra/core#",
+    "void": "http://rdfs.org/ns/void#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "totalItems": { "@type":"xsd:integer" },
+    "subset": "void:subset" } }

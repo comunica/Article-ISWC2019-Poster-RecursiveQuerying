@@ -19,50 +19,273 @@
   <header>
   <h1 id="recursive-queryingbr-query-based-metadata-extraction-for-querying-over-hypermedia-based-linked-datasources">Recursive Querying:<br />Query-based Metadata Extraction for Querying over Hypermedia-based Linked Datasources</h1>
 
-  <ul id="authors">
-    <li><a href="http://www.rubensworks.net/" typeof="http://xmlns.com/foaf/0.1/Person" resource="http://www.rubensworks.net/#me">Ruben Taelman</a></li>
-    <li><a href="#" typeof="http://xmlns.com/foaf/0.1/Person" resource="https://data.verborgh.org/people/miel_vander_sande">Miel Vander Sande</a></li>
-    <li><a href="https://ruben.verborgh.org/" typeof="http://xmlns.com/foaf/0.1/Person" resource="https://ruben.verborgh.org/profile/#me">Ruben Verborgh</a></li>
-  </ul>
+  <!--{:#authors}
+- <a href="http://www.rubensworks.net/" typeof="http://xmlns.com/foaf/0.1/Person" resource="http://www.rubensworks.net/#me">Ruben Taelman</a>
+- <a href="#" typeof="http://xmlns.com/foaf/0.1/Person" resource="https://data.verborgh.org/people/miel_vander_sande">Miel Vander Sande</a>
+- <a href="https://ruben.verborgh.org/" typeof="http://xmlns.com/foaf/0.1/Person" resource="https://ruben.verborgh.org/profile/#me">Ruben Verborgh</a>
 
-  <ul id="affiliations">
-    <li id="idlab">IDLab,
-          Department of Electronics and Information Systems,
-Ghent University – imec</li>
-  </ul>
+{:#affiliations}
+- {:#idlab} IDLab,
+            Department of Electronics and Information Systems,
+Ghent University – imec-->
 
   <section id="abstract">
     <h2>Abstract</h2>
     <!-- Context      -->
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+    <p>Linked Datasources can be exposed through hypermedia-based interfaces such as Triple Pattern Fragments.
+When intelligent clients want to query over such interfaces,
+they should be able to extract controls from their metadata.
 <!-- Need         -->
-Vestibulum finibus dignissim augue, id pellentesque est facilisis non.
+This extraction process typically happens by manually iterating over the RDF triples,
+which is hard to implement for complex control shapes.
 <!-- Task         -->
-Donec fringilla dolor non neque iaculis blandit.
+Since hypermedia-based query engines already have querying capabilities at their disposal,
+this <em>extraction</em> process can be simplified through a <em>single declarative query</em>.
 <!-- Object       -->
-Praesent aliquet eleifend iaculis.
+In this article, we implement and test this simplification using GraphQL-LD queries.
 <!-- Findings     -->
-Quisque pellentesque at odio ac bibendum.
+We show that this <em>query-based</em> metadata extraction process reduces implementation effort
+compared to the <em>ad hoc</em> metadata extraction
+at the cost of a slight increase in overhead during query execution.
 <!-- Conclusion   -->
-Pellentesque imperdiet felis urna, quis facilisis lacus gravida non.
-<!-- Perspectives -->
-Donec quis lectus eget sem tempor tristique pellentesque in dolor.</p>
+As such, a <em>trade-off</em> between <em>development</em> efficiency and <em>execution</em> efficiency is present.
+<!-- Perspectives --></p>
 
   </section>
 
 </header>
 
 <main>
-  <!-- Add sections by specifying their file name, excluding the '.md' suffix. -->
   <section id="introduction">
     <h2>Introduction</h2>
 
-    <p>This is a great article on the Semantic Web <span class="references">[<a href="#ref-1">1</a>]</span>, written in Markdown.</p>
+    <p>Linked Data <span class="references">[<a href="#ref-1">1</a>]</span> is published via different kinds of Web interfaces,
+such as <a property="schema:citation http://purl.org/spar/cito/cites" href="https://www.w3.org/TR/2013/REC-sparql11-protocol-20130321/">SPARQL endpoints</a> <span class="references">[<a href="#ref-2">2</a>]</span>,
+<a property="schema:citation http://purl.org/spar/cito/cites" href="https://www.w3.org/DesignIssues/LinkedData.html">Linked Data documents</a> <span class="references">[<a href="#ref-3">3</a>]</span>,
+or <span property="schema:citation http://purl.org/spar/cito/cites" resource="https://dx.doi.org/10.1016/j.websem.2016.03.003"><a href="http://linkeddatafragments.org/publications/jws2016.pdf">Triple Pattern Fragments (TPF)</a></span> <span class="references">[<a href="#ref-4">4</a>]</span>.</p>
 
-    <p>Make sure to <a href="http://www.treesmapsandtheorems.com/pdfs/TM&amp;Th-2.0-summary.pdf">write your document effectively</a>!</p>
+    <p>TPF is a hypermedia interface that follows the <a property="schema:citation http://purl.org/spar/cito/cites" href="https://www.ics.uci.edu/~fielding/pubs/dissertation/fielding_dissertation.pdf">REST principles</a> <span class="references">[<a href="#ref-5">5</a>]</span> by being <em>self-descriptive</em>.
+This allows intelligent clients to discover <em>metadata</em> about the source,
+such as how the interface can be <em>controlled</em>,
+and the <em>estimated cardinality</em> of the data fragment.
+In the case of TPF, this control is a paged triple pattern query form
+that is described with the Hydra Core vocabulary <span class="references">[<a href="#ref-6">6</a>]</span> in <a property="schema:citation http://purl.org/spar/cito/cites" href="https://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/">RDF</a> <span class="references">[<a href="#ref-7">7</a>]</span>.
+Intelligent hypermedia-based clients such as <a property="schema:citation http://purl.org/spar/cito/cites" href="https://comunica.github.io/Article-ISWC2018-Resource/">Comunica</a> <span class="references">[<a href="#ref-8">8</a>]</span>
+are able to detect and interpret this metadata
+to enable <a property="schema:citation http://purl.org/spar/cito/cites" href="https://www.w3.org/TR/2013/REC-sparql11-query-20130321/">SPARQL queries</a> <span class="references">[<a href="#ref-9">9</a>]</span> over one or more TPF interfaces.
+For this, the client must split up the SPARQL query into multiple smaller triple pattern queries.
+These triple pattern queries can be executed by the TPF interface,
+after which their results can be joined together client-side.</p>
 
-    <p class="todo">Write proper introduction.
-More information on snippets like this can be found on the <a href="https://github.com/rubensworks/ScholarMarkdown/wiki/Snippets">ScholarMarkdown wiki</a>.</p>
+    <p>To the best of our knowledge, all hypermedia-based clients extract this metadata in an ad hoc way.
+Concretely, the RDF triples contained in the HTTP response are parsed, and iterated over.
+When specific predicates are detected –such as <code>hydra:totalItems</code> for cardinality estimates–,
+the object value is extracted and stored in a metadata object for later use.
+While this method works well for simple metadata shapes –such as cardinality estimates–,
+it becomes harder for more complex metadata shapes –such as variable mappings within URL templates–.</p>
+
+    <p>This <em>ad hoc metadata extraction</em> is essentially a manual querying process.
+Since this process is typically part of a hypermedia-based query engine,
+the querying capabilities of the engine could be reused to achieve <em>query-based metadata extraction</em>.
+Instead of manually implementing logic to extract metadata,
+this logic can be replaced with a single query.</p>
+
+    <p>In this article, we discuss the ad hoc metadata extraction process
+within the Comunica query engine in <a href="#adhoc_metadata_extraction">Section 2</a>.
+After that, we introduce a query-based metadata extraction process for Comunica in <a href="#querybased_metadata_extraction">Section 3</a>.
+Finally, we conclude in <a href="#conclusions">Section 4</a>.</p>
+
+  </section>
+
+  <section id="adhoc_metadata_extraction">
+    <h2>Ad hoc Metadata Extraction</h2>
+
+    <p>In order to enable querying over TPF interfaces,
+the Comunica query engine detects and extracts metadata from RDF responses through two modules,
+which will be discussed in more detailed hereafter:</p>
+
+    <ul>
+      <li><a href="https://github.com/comunica/comunica/tree/master/packages/actor-rdf-metadata-extract-hydra-count"><strong>Hydra Count Extractor</strong></a>: Extracts cardinality estimates.</li>
+      <li><a href="https://github.com/comunica/comunica/tree/master/packages/actor-rdf-metadata-extract-hydra-controls"><strong>Hydra Controls Extractor</strong></a>: Extracts URL templates with variable mappings.</li>
+    </ul>
+
+    <h3 id="hydra-count-extractor">Hydra Count Extractor</h3>
+
+    <p>TPF interfaces expose cardinality estimates for the current fragment via the <code>hydra:totalItems</code> predicate.
+This allows client-side engines to determine an efficient join order between the different triple patterns of a SPARQL query.
+<a href="#data-count">Listing 1</a> shows an example of this count metadata.</p>
+
+    <p>Due to the simplicity of this data shape,
+the Hydra Count Extractor module simply iterates over the triples (or quads),
+and finds the cardinality in the triple object
+once the <code>hydra:totalItems</code> predicate is found.
+This implementation can be found on <a href="https://github.com/comunica/comunica/blob/master/packages/actor-rdf-metadata-extract-hydra-count/lib/ActorRdfMetadataExtractHydraCount.ts" class="mandatory" data-link-text="https:/​/​github.com/​comunica/​comunica/​blob/​master/​packages/​actor-​rdf-​metadata-​extract-​hydra-​count/​lib/​ActorRdfMetadataExtractHydraCount.ts">GitHub</a>.</p>
+
+    <figure id="data-count" class="listing">
+<pre><code>@prefix hydra: &lt;http://www.w3.org/ns/hydra/core#&gt;.
+</code><code>&lt;http://fragments.dbpedia.org/2016-04/en#metadata&gt; {
+</code><code>  &lt;http://fragments.dbpedia.org/2016-04/en&gt;
+</code><code>    hydra:totalItems &quot;1040358853&quot;^^xsd:integer.
+</code><code>}</code></pre>
+<figcaption>
+        <p><span class="label">Listing 1:</span> Part of the metadata from http://fragments.dbpedia.org/2016-04/en in TriG
+that declares the cardinality estimate with the <code>hydra:totalItems</code> predicate.</p>
+      </figcaption>
+</figure>
+
+    <h3 id="hydra-controls-extractor">Hydra Controls Extractor</h3>
+
+    <p>TPF interfaces expose their triple pattern search form via <a href="http://www.hydra-cg.com/spec/latest/core/#templated-links" class="mandatory" data-link-text="http:/​/​www.hydra-​cg.com/​spec/​latest/​core/​#templated-​links">Hydra templated links</a>.
+This allows client-side engines to determine what kind of queries can be sent to the interface (triple pattern queries in this case),
+and how the query should be encoded into the URL.
+<a href="#data-templatedlinks">Listing 2</a> shows an example of this templated link metadata.</p>
+
+    <p>This data shape is significantly more complex than the previous one for counts.
+That is why the Hydra Controls Extractor module consists of a non-trivial implementation.
+This module iterates over the triples (or quads), and detects all predicates that start with the <code>hydra:</code> prefix.
+For all triples with Hydra predicates, an in-memory triple index is maintained in the order of <em>predicate</em>, <em>subject</em>, <em>object</em>.
+Once all triples have been read, the index is read to find all objects for the <code>hydra:search</code> predicate,
+which gives us all search form identifiers.
+Next, the index is traversed for all <code>hydra:mapping</code> predicates and search form identifies as subjects,
+to find all mapping identifiers for each search form.
+Next, for each mapping, the index is traversed for <code>hydra:variable</code> and <code>hydra:property</code> predicates with mapping identifiers as subjects,
+to find their respective values.
+Finally, all discovered values are collected and saved in a convenient search form datastructure
+that can be used by other modules in the further querying process.
+This implementation can be found on <a href="https://github.com/comunica/comunica/blob/master/packages/actor-rdf-metadata-extract-hydra-controls/lib/ActorRdfMetadataExtractHydraControls.ts" class="mandatory" data-link-text="https:/​/​github.com/​comunica/​comunica/​blob/​master/​packages/​actor-​rdf-​metadata-​extract-​hydra-​controls/​lib/​ActorRdfMetadataExtractHydraControls.ts">GitHub</a>.</p>
+
+    <figure id="data-templatedlinks" class="listing">
+<pre><code>@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;.
+</code><code>@prefix void: &lt;http://rdfs.org/ns/void#&gt;.
+</code><code>@prefix hydra: &lt;http://www.w3.org/ns/hydra/core#&gt;.
+</code><code>&lt;http://fragments.dbpedia.org/2016-04/en#metadata&gt; {
+</code><code>&lt;http://fragments.dbpedia.org/2016-04/en#dataset&gt;
+</code><code>    void:subset &lt;http://fragments.dbpedia.org/2016-04/en&gt;;
+</code><code>    hydra:search _:triplePattern.
+</code><code>_:triplePattern hydra:template
+</code><code>&quot;http://fragments.dbpedia.org/2016-04/en{?subject,predicate,object}&quot;;
+</code><code>    hydra:mapping _:subject, _:predicate, _:object.
+</code><code>_:subject hydra:variable &quot;subject&quot;;
+</code><code>    hydra:property rdf:subject.
+</code><code>_:predicate hydra:variable &quot;predicate&quot;;
+</code><code>    hydra:property rdf:predicate.
+</code><code>_:object hydra:variable &quot;object&quot;;
+</code><code>    hydra:property rdf:object
+</code><code>}</code></pre>
+<figcaption>
+        <p><span class="label">Listing 2:</span> Part of the metadata from http://fragments.dbpedia.org/2016-04/en in TriG
+that declares the Hydra templated link to execute a triple pattern query.</p>
+      </figcaption>
+</figure>
+
+  </section>
+
+  <section id="querybased_metadata_extraction">
+    <h2>Query-based Metadata Extraction</h2>
+
+    <p>Due to the complexity of ad hoc metadata extraction –especially for the Hydra Controls Extractor–,
+we introduce a query-based metadata extraction process inside the Comunica query engine.
+Instead of writing our queries in SPARQL, we write them in <a property="schema:citation http://purl.org/spar/cito/cites" href="https://comunica.github.io/Article-ISWC2018-Demo-GraphQlLD/">GraphQL-LD</a> <span class="references">[<a href="#ref-10">10</a>]</span>
+for the following reasons:</p>
+
+    <ol>
+      <li>GraphQL-LD queries are more <em>compact</em>: since <em>IRIs are hidden</em> behind terms that are expanded via a JSON-LD context <span class="references">[<a href="#ref-11">11</a>]</span>.</li>
+      <li>GraphQL-LD results are <em>nested objects</em>: results correspond to the query shape and can directly be used <em>without further post-processing</em>, while would still be needed for an array of SPARQL bindings.</li>
+    </ol>
+
+    <p><a href="#query-count">Listing 3</a> and <a href="#query-templatedlinks">Listing 4</a> show the
+GraphQL-LD queries that respectively achieve the same task as
+the Hydra Count Extractor and Hydra Controls Extractor modules in Comunica.
+<a href="#query-context">Listing 5</a> shows the JSON-LD context that is used to expand terms in these queries to IRIs.</p>
+
+    <p>Both queries are precompiled to reduce runtime overhead as much as possible.
+Before query execution, the <code>$pageUrl</code> variables in these queries are bound to the actual TPF page URL that is being requested,
+so that the proper metadata will be extracted.
+In order to execute the queries, a temporary in-memory indexed triple store is created
+over which Comunica is able to execute these GraphQL-LD queries.
+Since the query shape directly corresponds to the data shape that is expected within Comunica’s metadata datastructure,
+minimal post-processing is needed once the results are available.
+Furthermore, since GraphQL-LD exploits JSON-LD’s <code>@type</code> feature for mapping RDF literal datatypes to JavaScript primitives,
+we don’t need to manually transform between datatypes for fields such as the numerical <code>totalItems</code>.</p>
+
+    <p>The implementation of these query-based metadata extraction module can be found on <a href="https://github.com/comunica/comunica/blob/refactor/metadata/packages/" class="mandatory" data-link-text="https:/​/​github.com/​comunica/​comunica/​blob/​refactor/​metadata/​packages/​">GitHub</a> in the <code>actor-rdf-metadata-extract-hydra-count-query</code> and <code>actor-rdf-metadata-extract-hydra-controls-query</code> packages.</p>
+
+    <div>
+<figure id="query-count" class="listing" style="width: 40%; display: block-inline; float: left">
+<pre><code>query($pageUrl: String) {
+</code><code>  graph
+</code><code>  id(_: $pageUrl)
+</code><code>  totalItems
+</code><code>}</code></pre>
+<figcaption>
+          <p><span class="label">Listing 3:</span> GraphQL-LD query for extracting cardinality estimates.</p>
+        </figcaption>
+</figure>
+
+<figure id="query-templatedlinks" class="listing" style="width: 40%; display: block-inline; float: right">
+<pre><code>query($pageUrl: String) {
+</code><code>  graph
+</code><code>  subset(_: $pageUrl)
+</code><code>  search {
+</code><code>    template
+</code><code>    mapping @optional {
+</code><code>      variable
+</code><code>      property
+</code><code>    }
+</code><code>  }
+</code><code>}</code></pre>
+<figcaption>
+          <p><span class="label">Listing 4:</span> GraphQL-LD query for extracting templated links.</p>
+        </figcaption>
+</figure>
+
+<br style="clear: both" />
+</div>
+
+    <figure id="query-context" class="listing">
+<pre><code>{ &quot;@context&quot;: {
+</code><code>    &quot;@vocab&quot;: &quot;http://www.w3.org/ns/hydra/core#&quot;,
+</code><code>    &quot;void&quot;: &quot;http://rdfs.org/ns/void#&quot;,
+</code><code>    &quot;xsd&quot;: &quot;http://www.w3.org/2001/XMLSchema#&quot;,
+</code><code>    &quot;totalItems&quot;: { &quot;@type&quot;:&quot;xsd:integer&quot; },
+</code><code>    &quot;subset&quot;: &quot;void:subset&quot; } }
+</code></pre>
+<figcaption>
+        <p><span class="label">Listing 5:</span> JSON-LD context for expanding terms in GraphQL-LD queries.</p>
+      </figcaption>
+</figure>
+
+  </section>
+
+  <section id="conclusions">
+    <h2>Conclusions</h2>
+
+    <p>Intelligent clients that enable querying over hypermedia interfaces such as TPF
+require metadata <em>detection</em>, <em>extraction</em>, and <em>shaping</em>.
+Ad hoc metadata extraction processes perform each of these steps separately,
+by manually detecting predicates,
+extracting matching triples into a temporary index,
+and reshaping the relevant parts of the index in a more convenient datastructure.
+As shown in this article, query-based metadata extraction allows these three steps to be performed automatically
+by recursively invoking the query engine on a subset of the RDF response.</p>
+
+    <p>Moving from ad hoc metadata extraction towards a query-based metadata extraction
+comes with the main advantage that the implementation of the extraction modules
+is significantly less complex, as the module contains not much more than just a GraphQL-LD query.
+This significantly lowers implementation effort and reduces chances of potential bugs.
+On the other hand, preliminary evaluation shows that query-based metadata extraction introduces a 10~20% overhead
+compared to ad hoc metadata extraction in Comunica.
+Profiling shows that the main bottleneck lies within the recursive invocation of Comunica.
+In future work, more elaborate evaluations are needed to measure
+the subjective difference in development effort,
+and the objective difference in execution efficiency.</p>
+
+    <p>Our preliminary evaluation shows that abstraction comes at the cost of reduced performance.
+As such, there is a trade-off between development efficiency and execution efficiency.
+Since Comunica’s main purpose is <em>flexibility</em>, and not <em>efficiency</em>, this is not a problem.
+Nevertheless, both the query-based and ad hoc metadata extraction modules are both available,
+where the former can be used for quick prototyping when performance is less important,
+and the latter can be used in performance-sensitive production environments.</p>
 
   </section>
 
@@ -72,7 +295,27 @@ More information on snippets like this can be found on the <a href="https://gith
 <h2>References</h2>
 <dl class="references">
   <dt id="ref-1">[1]</dt>
-  <dd resource="#semanticweb" typeof="schema:Article">Berners-Lee, T., Hendler, J., Lassila, O., others: The semantic web. Scientific American. 284, 28–37 (2001).</dd>
+  <dd resource="#linkeddata" typeof="schema:Article">Bizer, C., Heath, T., Berners-Lee, T.: Linked Data - the story so far. Semantic Services, Interoperability and Web Applications: Emerging Concepts. 205–227 (2009).</dd>
+  <dt id="ref-2">[2]</dt>
+  <dd resource="https://www.w3.org/TR/2013/REC-sparql11-protocol-20130321/" typeof="schema:CreativeWork">Feigenbaum, L., Todd Williams, G., Grant Clark, K., Torres, E.: SPARQL 1.1 Protocol. W3C, <a href="https://www.w3.org/TR/2013/REC-sparql11-protocol-20130321/">https:/​/​www.w3.org/TR/2013/REC-sparql11-protocol-20130321/</a> (2013).</dd>
+  <dt id="ref-3">[3]</dt>
+  <dd resource="https://www.w3.org/DesignIssues/LinkedData.html" typeof="schema:CreativeWork">Berners-Lee, T.: Linked Data. <a href="https://www.w3.org/DesignIssues/LinkedData.html">https:/​/​www.w3.org/DesignIssues/LinkedData.html</a> (2009).</dd>
+  <dt id="ref-4">[4]</dt>
+  <dd resource="https://dx.doi.org/10.1016/j.websem.2016.03.003" typeof="schema:Article">Verborgh, R., Vander Sande, M., Hartig, O., Van Herwegen, J., De Vocht, L., De Meester, B., Haesendonck, G., Colpaert, P.: Triple Pattern Fragments: a Low-cost Knowledge Graph Interface for the Web. Journal of Web Semantics. 37–38, (2016).</dd>
+  <dt id="ref-5">[5]</dt>
+  <dd resource="https://www.ics.uci.edu/~fielding/pubs/dissertation/fielding_dissertation.pdf" typeof="schema:Book">Fielding, R.T., Taylor, R.N.: Architectural styles and the design of network-based software architectures. University of California, Irvine Doctoral dissertation, <a href="https://www.ics.uci.edu/~fielding/pubs/dissertation/fielding_dissertation.pdf">https:/​/​www.ics.uci.edu/~fielding/pubs/dissertation/fielding_dissertation.pdf</a> (2000).</dd>
+  <dt id="ref-6">[6]</dt>
+  <dd resource="#hydra" typeof="schema:Article">Lanthaler, M., Gütl, C.: Hydra: A Vocabulary for Hypermedia-Driven Web APIs. LDOW. 996, (2013).</dd>
+  <dt id="ref-7">[7]</dt>
+  <dd resource="https://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/" typeof="schema:CreativeWork">Cyganiak, R., Wood, D., Lanthaler, M.: RDF 1.1: Concepts and Abstract Syntax. W3C, <a href="https://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/">https:/​/​www.w3.org/TR/2014/REC-rdf11-concepts-20140225/</a> (2014).</dd>
+  <dt id="ref-8">[8]</dt>
+  <dd resource="https://comunica.github.io/Article-ISWC2018-Resource/" typeof="schema:Article">Taelman, R., Van Herwegen, J., Vander Sande, M., Verborgh, R.: Comunica: a Modular SPARQL Query Engine for the Web. In: Proceedings of the 17th International Semantic Web Conference (2018).</dd>
+  <dt id="ref-9">[9]</dt>
+  <dd resource="https://www.w3.org/TR/2013/REC-sparql11-query-20130321/" typeof="schema:CreativeWork">Harris, S., Seaborne, A., Prud’hommeaux, E.: SPARQL 1.1 Query Language. W3C, <a href="https://www.w3.org/TR/2013/REC-sparql11-query-20130321/">https:/​/​www.w3.org/TR/2013/REC-sparql11-query-20130321/</a> (2013).</dd>
+  <dt id="ref-10">[10]</dt>
+  <dd resource="https://comunica.github.io/Article-ISWC2018-Demo-GraphQlLD/" typeof="schema:Article">Taelman, R., Vander Sande, M., Verborgh, R.: GraphQL-LD: Linked Data Querying with GraphQL. In: Proceedings of the 17th International Semantic Web Conference: Posters and Demos (2018).</dd>
+  <dt id="ref-11">[11]</dt>
+  <dd resource="#jsonld" typeof="schema:Article">Consortium, W.W.W., others: JSON-LD 1.0: a JSON-based serialization for linked data. (2014).</dd>
 </dl>
 </section>
 </footer>
