@@ -1,4 +1,4 @@
-## Ad-hoc Metadata Extraction
+## Ad hoc Metadata Extraction
 {:#adhoc_metadata_extraction}
 
 In order to enable querying over TPF interfaces,
