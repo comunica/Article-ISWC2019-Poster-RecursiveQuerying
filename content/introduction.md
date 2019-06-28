@@ -35,5 +35,4 @@ this logic can be replaced with a single query.
 In this article, we discuss the ad-hoc metadata extraction process
 within the Comunica query engine in [](#adhoc_metadata_extraction).
 After that, we introduce a query-based metadata extraction process for Comunica in [](#querybased_metadata_extraction).
-Next, we discuss preliminary evaluations in [](#evaluation).
 Finally, we conclude in [](#conclusions).
