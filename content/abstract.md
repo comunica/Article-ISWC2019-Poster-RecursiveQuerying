@@ -1,15 +1,21 @@
 ## Abstract
 <!-- Context      -->
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Linked Datasources can be exposed through hypermedia-based interfaces such as Triple Pattern Fragments.
+When intelligent clients want to query over such interfaces,
+they should be able to extract controls from their metadata.
 <!-- Need         -->
-Vestibulum finibus dignissim augue, id pellentesque est facilisis non.
+This extraction process typically happens by manually iterating over the RDF triples,
+which is hard to implement for complex control shapes.
 <!-- Task         -->
-Donec fringilla dolor non neque iaculis blandit.
+Since hypermedia-based query engines already have querying capabilities at their disposal,
+this *extraction* process can be simplified through a *single declarative query*.
 <!-- Object       -->
-Praesent aliquet eleifend iaculis.
+In this article, we implement and test this simplification using GraphQL-LD queries.
 <!-- Findings     -->
-Quisque pellentesque at odio ac bibendum.
+We show that this *query-based* metadata extraction process reduces implementation effort
+compared to the *ad hoc* metadata extraction
+at the cost of a slight increase in overhead during query execution.
 <!-- Conclusion   -->
-Pellentesque imperdiet felis urna, quis facilisis lacus gravida non.
+As such, a *trade-off* between *development* efficiency and *execution* efficiency is present.
 <!-- Perspectives -->
-Donec quis lectus eget sem tempor tristique pellentesque in dolor.
+

@@ -17,8 +17,11 @@ This significantly lowers implementation effort and reduces chances of potential
 On the other hand, preliminary evaluation shows that query-based metadata extraction introduces a 10~20% overhead
 compared to ad hoc metadata extraction in Comunica.
 Profiling shows that the main bottleneck lies within the recursive invocation of Comunica.
+In future work, more elaborate evaluations are needed to measure
+the subjective difference in development effort,
+and the objective difference in execution efficiency.
 
-This shows that abstraction comes at the cost of reduced performance.
+Our preliminary evaluation shows that abstraction comes at the cost of reduced performance.
 As such, there is a trade-off between development efficiency and execution efficiency.
 Since Comunica's main purpose is *flexibility*, and not *efficiency*, this is not a problem.
 Nevertheless, both the query-based and ad hoc metadata extraction modules are both available,
