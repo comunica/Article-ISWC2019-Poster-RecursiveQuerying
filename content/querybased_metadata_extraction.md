@@ -23,7 +23,8 @@ minimal post-processing is needed once the results are available.
 Furthermore, since GraphQL-LD exploits JSON-LD's `@type` feature for mapping RDF literal datatypes to JavaScript primitives,
 we don't need to manually transform between datatypes for fields such as the numerical `totalItems`.
 
-The implementation of these query-based metadata extraction module can be found on [GitHub](https://github.com/comunica/comunica/blob/refactor/metadata/packages/){:.mandatory} in the `actor-rdf-metadata-extract-hydra-count-query` and `actor-rdf-metadata-extract-hydra-controls-query` packages.
+<!--TODO: show after accept-->
+<!--The implementation of these query-based metadata extraction module can be found on [GitHub](https://github.com/comunica/comunica/blob/refactor/metadata/packages/){:.mandatory} in the `actor-rdf-metadata-extract-hydra-count-query` and `actor-rdf-metadata-extract-hydra-controls-query` packages.-->
 
 <figure id="query-context" class="listing">
 ````/code/query-context.txt````
